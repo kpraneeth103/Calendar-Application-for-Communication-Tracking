@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { Bar, Pie } from "react-chartjs-2";
+import { Bar, Pie, Line } from "react-chartjs-2";
 import { CSVLink } from "react-csv";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { FaDownload } from "react-icons/fa";
-import { Line } from "react-chartjs-2";
 import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
 import {
   Chart as ChartJS,
@@ -18,7 +17,7 @@ import {
   PointElement,
 } from "chart.js";
 
-// Register the components needed
+// Register ChartJS components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -28,11 +27,11 @@ ChartJS.register(
   Legend,
   ArcElement,
   LineElement,
-  PointElement, // Make sure PointElement is registered if you're using it
+  PointElement
 );
 
 const ReportsPage = () => {
-  const [activeSection, setActiveSection] = useState(1); // To toggle between sections
+  const [activeSection, setActiveSection] = useState(1); // Tracks the active section
   const [filter, setFilter] = useState({
     company: "All",
     method: "All",
@@ -77,18 +76,8 @@ const ReportsPage = () => {
 
   const realTimeActivities = [
     { id: 1, activity: "Email to Google", date: "2024-12-30", user: "User 1" },
-    {
-      id: 2,
-      activity: "Phone Call to Microsoft",
-      date: "2024-12-29",
-      user: "User 2",
-    },
-    {
-      id: 3,
-      activity: "LinkedIn Message to Amazon",
-      date: "2024-12-28",
-      user: "User 1",
-    },
+    { id: 2, activity: "Phone Call to Microsoft", date: "2024-12-29", user: "User 2" },
+    { id: 3, activity: "LinkedIn Message to Amazon", date: "2024-12-28", user: "User 1" },
   ];
 
   const handleFilterChange = (e) => {
@@ -101,249 +90,132 @@ const ReportsPage = () => {
 
   return (
     <div className="flex flex-col space-y-6 p-6 bg-gray-100 min-h-screen">
-      {/* Section Buttons */}
+      {/* Section Navigation */}
       <div className="flex space-x-4 mb-4">
-        <button
-          className="bg-blue-600 text-white p-3 rounded-md"
-          onClick={() => toggleSection(1)}
-        >
-          Communication Frequency
-        </button>
-        <button
-          className="bg-blue-600 text-white p-3 rounded-md"
-          onClick={() => toggleSection(2)}
-        >
-          Engagement Effectiveness
-        </button>
-        <button
-          className="bg-blue-600 text-white p-3 rounded-md"
-          onClick={() => toggleSection(3)}
-        >
-          Overdue Trends
-        </button>
-        <button
-          className="bg-blue-600 text-white p-3 rounded-md"
-          onClick={() => toggleSection(4)}
-        >
-          Real-Time Activity Log
-        </button>
+        {["Communication Frequency", "Engagement Effectiveness", "Overdue Trends", "Real-Time Activity Log"].map(
+          (sectionName, index) => (
+            <button
+              key={index}
+              className={`p-3 rounded-md ${
+                activeSection === index + 1 ? "bg-blue-700" : "bg-blue-600"
+              } text-white`}
+              onClick={() => toggleSection(index + 1)}
+            >
+              {sectionName}
+            </button>
+          )
+        )}
       </div>
 
-      {/* Conditional Rendering of Sections */}
+      {/* Conditional Rendering for Sections */}
       {activeSection === 1 && (
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-2xl font-bold mb-4">Communication Frequency</h3>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <h4 className="font-semibold mb-2">Frequency by Method</h4>
-              <Pie data={communicationData} />
-            </div>
-            <div>
-              <h4 className="font-semibold mb-2">Frequency by Method (Bar)</h4>
-              <Bar data={communicationData} />
-            </div>
-          </div>
-          {/* Filters and Export Buttons */}
-          <div className="flex space-x-4 justify-end">
-            <select
-              name="company"
-              onChange={handleFilterChange}
-              className="p-2 bg-white rounded"
-            >
-              <option value="All">All Companies</option>
-              <option value="Google">Google</option>
-              <option value="Microsoft">Microsoft</option>
-              <option value="Amazon">Amazon</option>
-            </select>
-            <select
-              name="method"
-              onChange={handleFilterChange}
-              className="p-2 bg-white rounded"
-            >
-              <option value="All">All Methods</option>
-              <option value="Email">Email</option>
-              <option value="Phone">Phone</option>
-              <option value="LinkedIn">LinkedIn</option>
-              <option value="In-Person">In-Person</option>
-            </select>
-            <input
-              type="date"
-              name="fromDate"
-              onChange={handleFilterChange}
-              className="p-2 bg-white rounded"
-            />
-            <input
-              type="date"
-              name="toDate"
-              onChange={handleFilterChange}
-              className="p-2 bg-white rounded"
-            />
-          </div>
-          <div className="flex space-x-4 justify-end mt-4">
-            <CSVLink
-              data={realTimeActivities}
-              className="bg-green-500 text-white p-3 rounded-md flex items-center"
-            >
-              <FaDownload className="mr-2" /> Export CSV
-            </CSVLink>
-            <PDFDownloadLink
-              document={<PDFReport reportType="communicationFrequency" data={communicationData} />}
-              fileName={`communication_frequency_report_${new Date().toISOString().split('T')[0]}.pdf`}
-            >
-              {({ loading }) => (
-                <button className="bg-blue-600 text-white p-3 rounded-md flex items-center">
-                  {loading ? (
-                    "Loading..."
-                  ) : (
-                    <>
-                      <FaDownload className="mr-2" /> Export PDF
-                    </>
-                  )}
-                </button>
-              )}
-            </PDFDownloadLink>
-          </div>
-        </div>
+        <Section
+          title="Communication Frequency"
+          pieData={communicationData}
+          barData={communicationData}
+          filters
+          exportData={realTimeActivities}
+        />
       )}
-
       {activeSection === 2 && (
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-2xl font-bold mb-4">Engagement Effectiveness</h3>
-          <Bar data={engagementData} />
-          <div className="flex space-x-4 justify-end mt-4">
-            <CSVLink
-              data={realTimeActivities}
-              className="bg-green-500 text-white p-3 rounded-md flex items-center"
-            >
-              <FaDownload className="mr-2" /> Export CSV
-            </CSVLink>
-            <PDFDownloadLink
-              document={<PDFReport reportType="engagementEffectiveness" data={engagementData} />}
-              fileName={`All_Companies_Engagement_Effectiveness_Report_${new Date().toISOString().split('T')[0]}.pdf`}
-            >
-              {({ loading }) => (
-                <button className="bg-blue-600 text-white p-3 rounded-md flex items-center">
-                  {loading ? (
-                    "Loading..."
-                  ) : (
-                    <>
-                      <FaDownload className="mr-2" /> Export PDF
-                    </>
-                  )}
-                </button>
-              )}
-            </PDFDownloadLink>
-          </div>
-        </div>
+        <Section
+          title="Engagement Effectiveness"
+          barData={engagementData}
+          exportData={realTimeActivities}
+        />
       )}
-
       {activeSection === 3 && (
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-2xl font-bold mb-4">
-            Overdue Communication Trends
-          </h3>
-          <Line data={overdueTrendsData} />
-        </div>
+        <Section title="Overdue Trends" lineData={overdueTrendsData} />
       )}
-
       {activeSection === 4 && (
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-2xl font-bold mb-4">Real-Time Activity Log</h3>
-          <table className="min-w-full table-auto">
-            <thead>
-              <tr>
-                <th className="px-4 py-2">Activity</th>
-                <th className="px-4 py-2">Date</th>
-                <th className="px-4 py-2">User</th>
-              </tr>
-            </thead>
-            <tbody>
-              {realTimeActivities.map((activity) => (
-                <tr key={activity.id}>
-                  <td className="px-4 py-2">{activity.activity}</td>
-                  <td className="px-4 py-2">{activity.date}</td>
-                  <td className="px-4 py-2">{activity.user}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <ActivityLog title="Real-Time Activity Log" data={realTimeActivities} />
       )}
     </div>
   );
 };
 
-const styles = StyleSheet.create({
-  page: {
-    padding: 20,
-  },
-  section: {
-    marginBottom: 10,
-  },
-  table: {
-    display: "table",
-    width: "auto",
-    borderStyle: "solid",
-    borderWidth: 1,
-    marginBottom: 10,
-  },
-  tableRow: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: "black",
-    padding: 5,
-  },
-  tableCell: {
-    flex: 1,
-    padding: 5,
-    textAlign: "center",
-  },
-});
+// Section Component
+const Section = ({ title, pieData, barData, lineData, filters, exportData }) => (
+  <div className="bg-white p-6 rounded-lg shadow-md">
+    <h3 className="text-2xl font-bold mb-4">{title}</h3>
+    <div className="grid md:grid-cols-2 gap-4">
+      {pieData && <Pie data={pieData} />}
+      {barData && <Bar data={barData} />}
+      {lineData && <Line data={lineData} />}
+    </div>
+    {filters && (
+      <div className="flex space-x-4 justify-end mt-4">
+        <select name="company" className="p-2 bg-white rounded">
+          <option value="All">All Companies</option>
+          <option value="Google">Google</option>
+          <option value="Microsoft">Microsoft</option>
+          <option value="Amazon">Amazon</option>
+        </select>
+        <select name="method" className="p-2 bg-white rounded">
+          <option value="All">All Methods</option>
+          <option value="Email">Email</option>
+          <option value="Phone">Phone</option>
+        </select>
+        <input type="date" name="fromDate" className="p-2 bg-white rounded" />
+        <input type="date" name="toDate" className="p-2 bg-white rounded" />
+      </div>
+    )}
+    {exportData && (
+      <div className="flex space-x-4 justify-end mt-4">
+        <CSVLink data={exportData} className="bg-green-500 text-white p-3 rounded-md flex items-center">
+          <FaDownload className="mr-2" /> Export CSV
+        </CSVLink>
+        <PDFDownloadLink document={<PDFReport title={title} data={exportData} />} fileName={`${title}.pdf`}>
+          {({ loading }) =>
+            loading ? (
+              <span>Loading...</span>
+            ) : (
+              <button className="bg-blue-600 text-white p-3 rounded-md flex items-center">
+                <FaDownload className="mr-2" /> Export PDF
+              </button>
+            )
+          }
+        </PDFDownloadLink>
+      </div>
+    )}
+  </div>
+);
 
-const PDFReport = ({ reportType, data }) => {
-  return (
-    <Document>
-      <Page size="A4" style={styles.page}>
-        <Text style={{ fontSize: 20, fontWeight: "bold" }}>
-          {reportType === "communicationFrequency"
-            ? "Communication Frequency Report"
-            : "Engagement Effectiveness Report"}
-        </Text>
+// Activity Log Component
+const ActivityLog = ({ title, data }) => (
+  <div className="bg-white p-6 rounded-lg shadow-md">
+    <h3 className="text-2xl font-bold mb-4">{title}</h3>
+    <table className="min-w-full table-auto">
+      <thead>
+        <tr>
+          <th className="px-4 py-2">Activity</th>
+          <th className="px-4 py-2">Date</th>
+          <th className="px-4 py-2">User</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data.map((activity) => (
+          <tr key={activity.id}>
+            <td className="px-4 py-2">{activity.activity}</td>
+            <td className="px-4 py-2">{activity.date}</td>
+            <td className="px-4 py-2">{activity.user}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
 
-        <View style={styles.section}>
-          {reportType === "communicationFrequency" && (
-            <View style={styles.table}>
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCell}>Method</Text>
-                <Text style={styles.tableCell}>Frequency (%)</Text>
-              </View>
-              {data.labels.map((label, index) => (
-                <View style={styles.tableRow} key={index}>
-                  <Text style={styles.tableCell}>{label}</Text>
-                  <Text style={styles.tableCell}>{data.datasets[0].data[index]}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-
-          {reportType === "engagementEffectiveness" && (
-            <View style={styles.table}>
-              <View style={styles.tableRow}>
-                <Text style={styles.tableCell}>Company</Text>
-                <Text style={styles.tableCell}>Engagement Rate (%)</Text>
-              </View>
-              {data.labels.map((label, index) => (
-                <View style={styles.tableRow} key={index}>
-                  <Text style={styles.tableCell}>{label}</Text>
-                  <Text style={styles.tableCell}>{data.datasets[0].data[index]}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
-      </Page>
-    </Document>
-  );
-};
+// PDF Report Component
+const PDFReport = ({ title, data }) => (
+  <Document>
+    <Page style={{ padding: 20 }}>
+      <Text style={{ fontSize: 20, marginBottom: 20 }}>{title}</Text>
+      {data.map((item, index) => (
+        <Text key={index}>{`${item.activity} on ${item.date} by ${item.user}`}</Text>
+      ))}
+    </Page>
+  </Document>
+);
 
 export default ReportsPage;

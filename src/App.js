@@ -22,9 +22,10 @@ const App = () => {
           {/* Main Content */}
           <main className="flex-grow p-6 w-full md:w-auto">
             <Routes>
+            <Route exact path="/" element={<ReportsPage />} />
               <Route path="/admin" element={<AdminPage />} />
               <Route path="/user" element={<UserPage />} />
-              <Route path="/" element={<ReportsPage />} />
+              
             </Routes>
           </main>
         </div>
