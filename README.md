@@ -104,6 +104,7 @@ Netlify:
 5. Once deployed, Netlify will provide a live URL.
 
 GitHub Pages:
+markdown
 
 ### Deploying to GitHub Pages:
 
